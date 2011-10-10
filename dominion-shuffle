@@ -1,0 +1,10 @@
+"""Picks 10 random cards from the Dominion base game."""
+import random
+
+cards = 'adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' ')
+
+n = 10
+for idx, v in zip(range(1, n+1), sorted(random.sample(cards, n))):
+  print '%d. %s' % (idx, v)
+
+# sample output: spy, library, feast, militia, witch, smithy, woodcutter, adventurer, moat, money-lender
