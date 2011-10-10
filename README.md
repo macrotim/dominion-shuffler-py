@@ -3,7 +3,7 @@ Dominon Shuffler
 
 Use the script to setup a new game of Dominion.
 
-	python dominion-shuffler
+	python dominion-shuffle
 
 Sample output
 -------------
