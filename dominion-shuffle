@@ -1,8 +1,67 @@
-"""Picks 10 random cards from the Dominion base game."""
+"""Picks 10 random cards from the Dominion base game.
+"""
+import getopt
 import random
+import sys
 
-cards = 'adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' ')
+cards = set('adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' '))
 
-n = 10
-for idx, v in zip(range(1, n+1), sorted(random.sample(cards, n))):
-  print '%d. %s' % (idx, v)
+def draw(required):
+  """Returns 10 random cards.
+
+  Arguments:
+  required -- Set of cards that must be included in the drawn set.
+  """
+  n = 10
+  drawn = set()
+  for c in sorted(random.sample(cards, n)):
+    drawn.add(c)
+  return drawn
+
+def sanitize_required(required):
+  """Verify that the 'required' set contains valid cards.
+
+  Arguments:
+  required -- Set of cards that must be included in the drawn set.
+  """
+  if len(required) != len(required & cards):
+    invalid = required - cards
+    print 'Required set contains at least one invalid card: %s' % ', '.join(invalid)
+    sys.exit()
+
+def try_until_required_are_drawn(required):
+  """Draws a random set that contains the required set.
+
+  Arguments:
+  required -- Set of cards that must be included in the drawn set.
+  """
+  while True:
+    drawn = draw(required)
+    if len(drawn & required) != len(required):
+      continue
+    n = len(drawn)
+    for idx, v in zip(range(1, n+1), sorted(drawn)):
+      print '%d. %s' % (idx, v)
+    break
+
+def usage():
+  print 'Usage: python dominion-shuffle'
+  print 'python dominion-shuffle --require throne,witch'
+
+if __name__ == '__main__':
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], 'hr:', ['require=', 'help'])
+
+    required = set()
+    for o, a in opts:
+      if o in ('r', '--require'):
+        required = set(a.split(','))
+      elif o in ('-h', '--help'):
+        usage()
+        sys.exit()
+        
+    sanitize_required(required)
+
+    try_until_required_are_drawn(required)
+  except getopt.GetoptError, err:
+    print str(err)
