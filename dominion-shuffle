@@ -2,26 +2,14 @@
 """
 import getopt
 import random
+import re
 import sys
 
-cards = set('adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' '))
-
-def draw(required):
-  """Returns 10 random cards.
-
-  Arguments:
-  required -- Set of cards that must be included in the drawn set.
-  """
-  n = 10
-  drawn = set()
-  for c in sorted(random.sample(cards, n)):
-    drawn.add(c)
-  return drawn
-
-def sanitize_required(required):
+def sanitize_required(cards, required):
   """Verify that the 'required' set contains valid cards.
 
   Arguments:
+  cards -- The set of cards.
   required -- Set of cards that must be included in the drawn set.
   """
   if len(required) != len(required & cards):
@@ -29,20 +17,29 @@ def sanitize_required(required):
     print 'Required set contains at least one invalid card: %s' % ', '.join(invalid)
     sys.exit()
 
-def try_until_required_are_drawn(required):
-  """Draws a random set that contains the required set.
+def draw(cards, required):
+  """Draw 10 cards at random.  The drawn set
+  must include the set of required cards.
 
   Arguments:
-  required -- Set of cards that must be included in the drawn set.
+  cards -- The set of cards to draw from.
+  required -- The required set of cards.
   """
-  while True:
-    drawn = draw(required)
-    if len(drawn & required) != len(required):
-      continue
-    n = len(drawn)
-    for idx, v in zip(range(1, n+1), sorted(drawn)):
-      print '%d. %s' % (idx, v)
-    break
+  drawn = set(required)
+  cards = cards - required  # Remove the required cards from the deck.
+
+  num_to_draw = 10 - len(drawn)
+  return drawn | set(random.sample(cards, num_to_draw))
+
+def print_cards(cards):
+  """Print the cards.
+
+  Arguments:
+  cards -- The set of cards.
+  """
+  n = len(cards)
+  for idx, v in zip(range(1, n+1), sorted(cards)):
+    print '%d. %s' % (idx, v)
 
 def usage():
   print 'Usage: python dominion-shuffle'
@@ -55,13 +52,16 @@ if __name__ == '__main__':
     required = set()
     for o, a in opts:
       if o in ('r', '--require'):
-        required = set(a.split(','))
+        required = set(re.compile('\s*,\s*').split(a))
       elif o in ('-h', '--help'):
         usage()
         sys.exit()
-        
-    sanitize_required(required)
 
-    try_until_required_are_drawn(required)
+
+    cards = set('adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' '))
+
+    sanitize_required(cards, required)
+    drawn = draw(cards, required)
+    print_cards(drawn)
   except getopt.GetoptError, err:
     print str(err)
