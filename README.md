@@ -1,4 +1,4 @@
-Dominon Shuffler
+Dominion Shuffler
 ================
 
 Use the script to setup a new game of Dominion.
