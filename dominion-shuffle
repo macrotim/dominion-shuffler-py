@@ -1,34 +1,43 @@
 """Picks 10 random cards from the Dominion base game.
 """
 import getopt
+import math
 import random
 import re
 import sys
 
-def sanitize_required(cards, required):
-  """Verify that the 'required' set contains valid cards.
+kingdom_card_sets = {
+  'dominion': set('Adventurer,Bureaucrat,Cellar,Chancellor,Chapel,Council Room,Feast,Festival,Gardens,Laboratory,Library,Market,Militia,Mine,Moat,Moneylender,Remodel,Smithy,Spy,Thief,Throne Room,Village,Witch,Woodcutter,Workshop'.split(',')),
+  'prosperity': set('Bank,Bishop,City,Contraband,Counting House,Expand,Forge,Goons,Grand Market,Hoard,King\'s Court,Loan,Mint,Monument,Mountebank,Peddler,Quarry,Rabble,Royal Seal,Talisman,Trade Route,Vault,Venture,Watchtower,Worker\'s Village'.split(','))
+}
+
+def sanitize_include(cards, include):
+  """Verify that the 'include' set contains valid cards.
 
   Arguments:
   cards -- The set of cards.
-  required -- Set of cards that must be included in the drawn set.
+  inlude -- Set of cards that must be included in the drawn set.
   """
-  if len(required) != len(required & cards):
-    invalid = required - cards
+  if len(include) != len(include & cards):
+    invalid = include - cards
     print 'Required set contains at least one invalid card: %s' % ', '.join(invalid)
     sys.exit()
 
-def draw(cards, required):
-  """Draw 10 cards at random.  The drawn set
-  must include the set of required cards.
+def draw(n, cards, include):
+  """Draw N cards at random.  The drawn set
+  must include the set of include cards.
 
   Arguments:
+  n -- The number of cards to draw.
   cards -- The set of cards to draw from.
-  required -- The required set of cards.
+  include -- The required set of cards.
   """
-  drawn = set(required)
-  cards = cards - required  # Remove the required cards from the deck.
+  assert n >= len(include)
 
-  num_to_draw = 10 - len(drawn)
+  drawn = set(include)
+  cards = cards - include # Remove the required cards from the deck.
+
+  num_to_draw = n - len(drawn)
   return drawn | set(random.sample(cards, num_to_draw))
 
 def print_cards(cards):
@@ -41,27 +50,64 @@ def print_cards(cards):
   for idx, v in zip(range(1, n+1), sorted(cards)):
     print '%d. %s' % (idx, v)
 
+def get_counts(names):
+  """Determine the number of cards to draw from each set.
+
+  Examples: 
+  (Dominion) => counts = (10)
+  (Dominion,Prosperity) => counts = (5,5)
+  (Dominion,Prosperity,Intrigue) => counts = (3,3,4)
+
+  Arguments:
+  names -- A list containing names of Dominion sets.
+  """
+  total = 10
+  counts = []
+  num_per_deck = int(math.floor(total / len(names)))
+  for name in names:
+    total -= num_per_deck
+    counts.append(num_per_deck)
+  counts[-1] += total
+  return counts
+
 def usage():
   print 'Usage: python dominion-shuffle'
-  print 'python dominion-shuffle --require throne,witch'
+  print 'python dominion-shuffle --include Throne,Witch'
+  print "python dominion-shuffle --names 'dominion,prosperity' --include 'Gardens,Mountebank'"
 
 if __name__ == '__main__':
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'hr:', ['require=', 'help'])
+    opts, args = getopt.getopt(sys.argv[1:], 'n:hi:', ['names=', 'include=', 'help'])
 
-    required = set()
+    include = set()
+    names = ['dominion']
+
     for o, a in opts:
-      if o in ('r', '--require'):
-        required = set(re.compile('\s*,\s*').split(a))
+      if o in ('n', '--names'):
+        names =  set(re.compile('\s*,\s*').split(a))
+      elif o in ('i', '--include'):
+        include = set(re.compile('\s*,\s*').split(a))
       elif o in ('-h', '--help'):
         usage()
         sys.exit()
 
+    # Verify that the 'include' set specifies valid cards.
+    cards = set()
+    for name in names:
+      cards |= kingdom_card_sets[name]
+    sanitize_include(cards, include)
 
-    cards = set('adventurer bureaucrat cellar chancellor chapel council-room feast festival laboratory library market militia mine moat money-lender remodel smithy spy thief throne-room village witch woodcutter workshop gardens'.split(' '))
+    # Draw n cards from each set of kingdom cards
+    # until 10 are drawn.
+    counts = get_counts(names)
+    drawn_sets = []
+    for n, name in zip(counts, names):
+      this_set = kingdom_card_sets[name]
+      drawn_sets.append((name, draw(n, this_set, include&this_set)))
 
-    sanitize_required(cards, required)
-    drawn = draw(cards, required)
-    print_cards(drawn)
+    for name, drawn in drawn_sets:
+      print 'From %s:' % name
+      print_cards(drawn)
+      print
   except getopt.GetoptError, err:
     print str(err)
