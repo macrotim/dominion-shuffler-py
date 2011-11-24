@@ -1,6 +1,7 @@
 """Picks 10 random cards from the Dominion base game.
 """
 import getopt
+import json
 import math
 import random
 import re
@@ -8,10 +9,12 @@ import sys
 
 kingdom_card_sets = {
   'dominion': set('Adventurer,Bureaucrat,Cellar,Chancellor,Chapel,Council Room,Feast,Festival,Gardens,Laboratory,Library,Market,Militia,Mine,Moat,Moneylender,Remodel,Smithy,Spy,Thief,Throne Room,Village,Witch,Woodcutter,Workshop'.split(',')),
+  'intrigue': set('Baron,Bridge,Conspirator,Coppersmith,Courtyard,Duke,Great Hall,Harem,Ironworks,Masquerade,Mining Village,Minion,Nobles,Pawn,Saboteur,Scout,Secret Chamber,Shanty Town,Steward,Swindler,Torturer,Trading Post,Tribute,Upgrade,Wishing Well'.split(',')),
+  'seaside': set('Ambassador,Bazaar,Caravan,Cutpurse,Embargo,Explorer,Fishing Village,Ghost Ship,Haven,Island,Lighthouse,Lookout,Merchant Ship,Native Village,Navigator,Outpost,Pearl Diver,Pirate Ship,Salvager,Sea Hag,Smugglers,Tactician,Treasure Map,Treasury,Warehouse,Wharf'.split(',')),
+  'alchemy': set('Alchemist,Apothecary,Apprentice,Familiar,Golem,Herbalist,Philosopher\'s Stone,Possession,Scrying Pool,Transmute,University,Vineyard'.split(',')),
   'prosperity': set('Bank,Bishop,City,Contraband,Counting House,Expand,Forge,Goons,Grand Market,Hoard,King\'s Court,Loan,Mint,Monument,Mountebank,Peddler,Quarry,Rabble,Royal Seal,Talisman,Trade Route,Vault,Venture,Watchtower,Worker\'s Village'.split(',')),
-  'alchemy': set('Herbalist,Potion,Apprentice,Transmute,Vineyard,Apothecary,Scrying Pool,University,Alchemist,Familiar,Philospher\'s Stone,Golem,Possession'.split(',')),
-  'cornucopia': set('Hamlet,Fortune Teller,Menagerie,Farming Village,Horse Traders,Remake,Tournament,Young Witch,Harvest,Horn of Plenty,Hunting Party,Jester,Fairgrounds'.split(',')),
-  'prizes': set('Bag of Gold,Diadem,Followers,Princess,Trusty Steed'.split(','))
+  'cornucopia': set('Fairgrounds,Farming Village,Fortune Teller,Hamlet,Harvest,Horn of Plenty,Horse Traders,Hunting Party,Jester,Menagerie,Remake,Tournament,Young Witch'.split(',')),
+  'hinterlands': set('Border Village,Cache,Cartographer,Crossroads,Develop,Duchess,Embassy,Farmland,Fool\'s Gold,Haggler,Highway,Ill-Gotten Gains,Inn,Jack of All Trades,Mandarin,Margrave,Noble Brigand,Nomad Camp,Oasis,Oracle,Scheme,Silk Road,Spice Merchant,Stables,Trader,Tunnel'.split(','))
 }
 
 def sanitize_include(cards, include):
