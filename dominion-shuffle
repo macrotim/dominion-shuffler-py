@@ -8,7 +8,10 @@ import sys
 
 kingdom_card_sets = {
   'dominion': set('Adventurer,Bureaucrat,Cellar,Chancellor,Chapel,Council Room,Feast,Festival,Gardens,Laboratory,Library,Market,Militia,Mine,Moat,Moneylender,Remodel,Smithy,Spy,Thief,Throne Room,Village,Witch,Woodcutter,Workshop'.split(',')),
-  'prosperity': set('Bank,Bishop,City,Contraband,Counting House,Expand,Forge,Goons,Grand Market,Hoard,King\'s Court,Loan,Mint,Monument,Mountebank,Peddler,Quarry,Rabble,Royal Seal,Talisman,Trade Route,Vault,Venture,Watchtower,Worker\'s Village'.split(','))
+  'prosperity': set('Bank,Bishop,City,Contraband,Counting House,Expand,Forge,Goons,Grand Market,Hoard,King\'s Court,Loan,Mint,Monument,Mountebank,Peddler,Quarry,Rabble,Royal Seal,Talisman,Trade Route,Vault,Venture,Watchtower,Worker\'s Village'.split(',')),
+  'alchemy': set('Herbalist,Potion,Apprentice,Transmute,Vineyard,Apothecary,Scrying Pool,University,Alchemist,Familiar,Philospher\'s Stone,Golem,Possession'.split(',')),
+  'cornucopia': set('Hamlet,Fortune Teller,Menagerie,Farming Village,Horse Traders,Remake,Tournament,Young Witch,Harvest,Horn of Plenty,Hunting Party,Jester,Fairgrounds'.split(',')),
+  'prizes': set('Bag of Gold,Diadem,Followers,Princess,Trusty Steed'.split(','))
 }
 
 def sanitize_include(cards, include):
@@ -53,7 +56,7 @@ def print_cards(cards):
 def get_counts(names):
   """Determine the number of cards to draw from each set.
 
-  Examples: 
+  Examples:
   (Dominion) => counts = (10)
   (Dominion,Prosperity) => counts = (5,5)
   (Dominion,Prosperity,Intrigue) => counts = (3,3,4)
