@@ -20,10 +20,9 @@ def sanitize_include(cards, include):
   """
   if len(include) != len(include & cards):
     invalid = include - cards
-    print 'Required set contains at least one invalid card: %s' % ', '.join(invalid)
-    sys.exit()
+    error('Required set contains at least one invalid card: %s' % ', '.join(invalid))
 
-def draw(n, cards, include):
+def draw(n, cards, include, exclude):
   """Draw N cards at random.  The drawn set
   must include the set of include cards.
 
@@ -31,11 +30,12 @@ def draw(n, cards, include):
   n -- The number of cards to draw.
   cards -- The set of cards to draw from.
   include -- The required set of cards.
+  exclude -- The set of cards to exclude
   """
   assert n >= len(include)
 
   drawn = set(include)
-  cards = cards - include # Remove the required cards from the deck.
+  cards = cards - include - exclude # Remove the required and undesired cards from the deck.
 
   num_to_draw = n - len(drawn)
   return drawn | set(random.sample(cards, num_to_draw))
@@ -70,23 +70,37 @@ def get_counts(names):
   counts[-1] += total
   return counts
 
+def get_attack_cards():
+  return set('Bureaucrat,Goons,Militia,Mountebank,Rabble,Spy,Thief,Witch'.split(','))
+
 def usage():
   print 'Usage: python dominion-shuffle'
   print 'python dominion-shuffle --include Throne,Witch'
   print "python dominion-shuffle --names 'dominion,prosperity' --include 'Gardens,Mountebank'"
 
+def error(msg):
+  print msg
+  sys.exit()
+
 if __name__ == '__main__':
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:hi:', ['names=', 'include=', 'help'])
+    opts, args = getopt.getopt(sys.argv[1:], 'n:ghi:', ['names=', 'include=', 'gentlemen', 'help'])
 
     include = set()
+    exclude = set()
     names = ['dominion']
 
     for o, a in opts:
-      if o in ('n', '--names'):
+      if o in ('-n', '--names'):
         names =  set(re.compile('\s*,\s*').split(a))
-      elif o in ('i', '--include'):
+      elif o in ('-i', '--include'):
         include = set(re.compile('\s*,\s*').split(a))
+      elif o in ('-g', '--gentlemen'):
+        atk_cards = get_attack_cards()
+        if include & atk_cards:
+          error('Required set includes at least one attack card: %s' % ','.join(include & atk_cards));
+        else:
+          exclude |= atk_cards
       elif o in ('-h', '--help'):
         usage()
         sys.exit()
@@ -103,7 +117,7 @@ if __name__ == '__main__':
     drawn_sets = []
     for n, name in zip(counts, names):
       this_set = kingdom_card_sets[name]
-      drawn_sets.append((name, draw(n, this_set, include&this_set)))
+      drawn_sets.append((name, draw(n, this_set, include&this_set, exclude)))
 
     for name, drawn in drawn_sets:
       print 'From %s:' % name
