@@ -59,7 +59,7 @@ def print_cards(cards):
 def get_counts(names):
   """Determine the number of cards to draw from each set.
 
-  Examples: 
+  Examples:
   (Dominion) => counts = (10)
   (Dominion,Prosperity) => counts = (5,5)
   (Dominion,Prosperity,Intrigue) => counts = (3,3,4)
